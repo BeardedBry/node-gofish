@@ -12,6 +12,7 @@ var { cards } = require('./Cards');
 //const game = io.of('/cardgame');
 // game.on
 
+
 io.on('connection', function (socket) {
     console.log('socket connected', socket.id);
 
@@ -19,13 +20,16 @@ io.on('connection', function (socket) {
         console.log('client disconnected');
     });
 
-    // receive ping
-    socket.on('hello', (data) => {
-        console.log('world');
-        //game.emit
-        const newData = data.toUpperCase();
-        socket.emit('hello', newData);
+    // socket.on REQUEST
+    socket.on('REQUEST', (event) => {
+        console.log('Request for ', event);
+        const { state } = reducer(event);
+        if (state) {
+            socket.emit('RECEIVE', state, event);
+        }
     });
+
+
 
 });
 
@@ -37,19 +41,21 @@ http.listen(port, function () {
 
 // Card Logic
 function reducer(action) {
-    switch (action.type) {
-        case "shuffle":
-            return shuffle(cards);
+    switch (action) {
+        case "DECK":
+            return { state: cards }
+        case "SHUFFLE":
+            let shuffled = shuffle(cards);
+            return { state: shuffled };
         default:
             return cards;
     }
-
 }
 
 //var { cards } = Cards;
 //console.log(cards);
 
 
-// helper functions
 
+// helper functions
 const shuffle = arr => arr.sort(() => .5 - Math.random());
